@@ -1,23 +1,60 @@
-import logo from './logo.svg';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import './App.css';
 
 function App() {
+
+  const [votes, setVotes] = useState({})
+
+  useEffect(() => {
+    axios
+      .get(
+        "https://resultados.tse.jus.br/oficial/ele2022/544/dados-simplificados/br/br-c0001-e000544-r.json"
+      )
+      .then((response) => {
+        console.log(response.data.cand);
+      });
+  }, []);
+
+  const fetchVotes = async () => {
+    const response = await axios.get(
+      "https://resultados.tse.jus.br/oficial/ele2022/544/dados-simplificados/br/br-c0001-e000544-r.json"
+    );
+    setVotes(response.data);
+  };
+
+  useEffect(() => {
+    let interval = setInterval(() => {
+      fetchVotes();
+    }, 10000);
+
+    return () => clearInterval(interval);
+   
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>votos</th>
+            <th>porcentagem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {votes.cand &&
+            votes.cand.map((cand) => (
+              <tr key={cand.seq}>
+                <td>{cand.nm}</td>
+                <td>{cand.vap}</td>
+                <td>{cand.pvap}%</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
+      <h1>urnas apuradas: {votes.psi}%</h1>
     </div>
   );
 }
